@@ -1,0 +1,5 @@
+{
+  "watch": ["server.js", "views/*.ejs", "public/*.css"],
+  "ext": "js,ejs,css",
+  "exec": "node livereload.js & node server.js"
+}
