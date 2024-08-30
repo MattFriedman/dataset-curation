@@ -80,7 +80,7 @@ app.post('/pairs', async (req, res) => {
         const { instruction, output } = req.body;
         const newPair = new Pair({ instruction, output });
         await newPair.save();
-        res.redirect('/');
+        res.render('index');
     } catch (err) {
         console.error('Error adding pair:', err);
         res.status(500).send('Internal Server Error');
