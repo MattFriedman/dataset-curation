@@ -164,7 +164,7 @@ app.get('/change-password', isAuthenticated, (req, res) => {
 
 // Secure routes
 app.get('/add', isAuthenticated, (req, res) => {
-    res.render('index', { user: req.user });
+    res.render('add-pair', { user: req.user });
 });
 
 app.post('/pairs', isAuthenticated, async (req, res) => {
