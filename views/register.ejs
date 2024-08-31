@@ -1,0 +1,16 @@
+<% title = 'Register' %>
+
+<form action="/auth/register" method="POST">
+    <input type="text" name="username" placeholder="Username" required>
+    <input type="password" name="password" placeholder="Password" required>
+    <div class="roles-container">
+        <label>
+            <input type="checkbox" name="roles" value="user" checked> User
+        </label>
+        <label>
+            <input type="checkbox" name="roles" value="admin"> Admin
+        </label>
+    </div>
+    <button type="submit">Register</button>
+</form>
+<p>Already have an account? <a href="/login">Login</a></p>

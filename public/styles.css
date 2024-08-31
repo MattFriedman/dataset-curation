@@ -1,17 +1,66 @@
 body {
     font-family: Arial, sans-serif;
     margin: 0;
-    padding: 20px;
+    padding: 0;
     background-color: #f4f4f9;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.logo {
+    width: 50px;
+    height: 50px;
+    margin-right: 10px;
 }
 
 h1 {
     color: #333;
+    margin: 0;
+}
+
+.content-wrapper {
+    display: flex;
+}
+
+nav {
+    width: 200px;
+    margin-right: 20px;
+}
+
+nav ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+nav li {
+    margin-bottom: 10px;
+}
+
+nav a {
+    text-decoration: none;
+    color: #007bff;
+}
+
+nav a:hover {
+    text-decoration: underline;
+}
+
+main {
+    flex: 1;
 }
 
 form {
     max-width: 600px;
-    margin: 0 auto;
     padding: 20px;
     background-color: #fff;
     border-radius: 8px;
@@ -27,30 +76,21 @@ form div {
 label {
     flex: 1;
     margin-right: 10px;
-}
-
-textarea {
-    flex: 2;
-    width: auto;
-    height: 100px;
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    resize: vertical;
-}
-
-label {
     display: block;
     margin-bottom: 5px;
     font-weight: bold;
 }
 
-textarea {
-    width: 100%;
-    height: 100px;
+textarea, input[type="text"], input[type="password"] {
+    flex: 2;
+    width: auto;
     padding: 10px;
     border: 1px solid #ccc;
     border-radius: 4px;
+}
+
+textarea {
+    height: 100px;
     resize: vertical;
 }
 
@@ -67,4 +107,13 @@ button {
 
 button:hover {
     background-color: #0056b3;
+}
+
+.roles-container {
+    margin: 10px 0;
+}
+
+.roles-container label {
+    display: inline-block;
+    margin-right: 15px;
 }

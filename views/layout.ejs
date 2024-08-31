@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title><%= typeof title !== 'undefined' ? `${title} | Dataset Curation App` : 'Dataset Curation App' %></title>
+    <link rel="stylesheet" type="text/css" href="/styles.css">
+    <link rel="icon" type="image/svg+xml" href="/logo.svg">
+    <%- defineContent('style') %>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <a href="/"><img src="/logo.svg" alt="Logo" class="logo"></a>
+            <h1>Dataset Curation App</h1>
+        </header>
+        <div class="content-wrapper">
+            <nav>
+                <ul>
+                    <li><a href="/add">Add Instruction-Output Pair</a></li>
+                    <li><a href="/pairs">View Instruction-Output Pairs</a></li>
+                    <li><a href="/export">Export Dataset</a></li>
+                    <% if (typeof user !== 'undefined' && user && user.roles.includes('admin')) { %>
+                        <li><a href="/register">Register New User</a></li>
+                    <% } %>
+                    <% if (typeof user !== 'undefined' && user) { %>
+                        <li><a href="/auth/logout">Logout</a></li>
+                    <% } else { %>
+                        <li><a href="/login">Login</a></li>
+                    <% } %>
+                </ul>
+            </nav>
+            <main>
+                <%- body %>
+            </main>
+        </div>
+        <footer>
+            <!-- Common footer content -->
+        </footer>
+    </div>
+    <%- defineContent('script') %>
+</body>
+</html>
