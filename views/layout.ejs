@@ -30,6 +30,7 @@
                         <li><a href="/register">Register New User</a></li>
                     <% } %>
                     <% if (typeof user !== 'undefined' && user) { %>
+                        <li><a href="/change-password">Change Password</a></li>
                         <li><a href="/auth/logout">Logout</a></li>
                     <% } else { %>
                         <li><a href="/login">Login</a></li>

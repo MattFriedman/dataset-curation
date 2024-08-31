@@ -10,6 +10,7 @@ const MongoStore = require('connect-mongo');
 const expressLayouts = require('express-ejs-layouts');
 const User = require('./models/User');
 const roleAccess = require('./middleware/rbac');
+const { stringify } = require('csv-stringify/sync');
 
 // Create a LiveReload server
 const liveReloadServer = livereload.createServer({ port: 35731 });
@@ -157,6 +158,10 @@ app.get('/register', isAuthenticated, roleAccess(['admin']), (req, res) => {
     res.render('register');
 });
 
+app.get('/change-password', isAuthenticated, (req, res) => {
+    res.render('change-password', { user: req.user });
+});
+
 // Secure routes
 app.get('/add', isAuthenticated, (req, res) => {
     res.render('index', { user: req.user });
@@ -175,11 +180,25 @@ app.post('/pairs', isAuthenticated, async (req, res) => {
 });
 
 app.get('/export', isAuthenticated, async (req, res) => {
-    const pairs = await Pair.find();
-    const csv = ['instruction,output', ...pairs.map(pair => `${pair.instruction},${pair.output}`)].join('\n');
-    res.header('Content-Type', 'text/csv');
-    res.attachment('dataset.csv');
-    res.send(csv);
+    try {
+        const pairs = await Pair.find().populate('approvals.user', 'username');
+        const data = pairs.map(pair => {
+            const approvedBy = pair.approvals.map(approval => approval.user.username).join(', ');
+            return [pair.instruction, pair.output, approvedBy];
+        });
+        
+        const csvContent = stringify(data, {
+            header: true,
+            columns: ['instruction', 'output', 'approved_by']
+        });
+
+        res.header('Content-Type', 'text/csv');
+        res.attachment('dataset.csv');
+        res.send(csvContent);
+    } catch (err) {
+        console.error('Error exporting CSV:', err);
+        res.status(500).send('Internal Server Error');
+    }
 });
 
 app.get('/pairs', isAuthenticated, async (req, res) => {
