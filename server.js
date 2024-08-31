@@ -6,6 +6,7 @@ const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const passport = require('passport');
 const session = require('express-session');
+const MongoStore = require('connect-mongo');
 const expressLayouts = require('express-ejs-layouts');
 const User = require('./models/User');
 const roleAccess = require('./middleware/rbac');
@@ -35,7 +36,14 @@ app.set('layout extractStyles', true);
 app.use(session({
     secret: 'your_session_secret',
     resave: false,
-    saveUninitialized: false
+    saveUninitialized: false,
+    store: MongoStore.create({ 
+        mongoUrl: 'mongodb://localhost:27017/dataset',
+        collectionName: 'sessions' // This is optional, default is 'sessions'
+    }),
+    cookie: {
+        maxAge: 1000 * 60 * 60 * 24 * 7 // 1 week
+    }
 }));
 
 // Passport middleware
@@ -57,14 +65,40 @@ mongoose.connect('mongodb://localhost:27017/dataset')
     .catch(err => console.error('Could not connect to MongoDB:', err));
 
 // Define a Schema for instruction-output pairs
-const pairSchema = new mongoose.Schema({
-    instruction: String,
-    output: String
-});
+const Pair = require('./models/Pair');
 
 app.get('/test', (req, res) => {
     res.send('Hello, Test World again!'); // Change this message
     console.log('test route ok');
+});
+
+app.post('/pairs/:id/toggle-approval', isAuthenticated, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const userId = req.user.id;
+        const pair = await Pair.findById(id);
+        
+        if (!pair) {
+            return res.status(404).send('Pair not found');
+        }
+
+        const approvalIndex = pair.approvals.findIndex(approval => approval.user.equals(userId));
+        
+        if (approvalIndex > -1) {
+            pair.approvals.splice(approvalIndex, 1);
+        } else {
+            pair.approvals.push({ user: userId });
+        }
+
+        await pair.save();
+        res.json({ 
+            approved: approvalIndex === -1, 
+            approvalCount: pair.approvalCount 
+        });
+    } catch (err) {
+        console.error('Error toggling approval:', err);
+        res.status(500).send('Internal Server Error');
+    }
 });
 
 app.put('/pairs/:id', isAuthenticated, async (req, res) => {
@@ -94,8 +128,7 @@ app.delete('/pairs/:id', isAuthenticated, async (req, res) => {
     }
 });
 
-// Create a Model
-const Pair = mongoose.model('Pair', pairSchema);
+const marked = require('marked');
 
 // Middleware to check if user is authenticated
 function isAuthenticated(req, res, next) {

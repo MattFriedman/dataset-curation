@@ -5,15 +5,23 @@
     <link rel="stylesheet" type="text/css" href="/styles.css">
     <link rel="icon" type="image/svg+xml" href="/logo.svg">
     <%- defineContent('style') %>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
 <body>
     <div class="container">
         <header>
-            <a href="/"><img src="/logo.svg" alt="Logo" class="logo"></a>
-            <h1>Dataset Curation App</h1>
+            <div class="header-content">
+                <button id="menu-toggle" aria-label="Toggle menu">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+                <a href="/"><img src="/logo.svg" alt="Logo" class="logo"></a>
+                <h1>Dataset Curation App</h1>
+            </div>
         </header>
         <div class="content-wrapper">
-            <nav>
+            <nav id="side-menu">
                 <ul>
                     <li><a href="/add">Add Instruction-Output Pair</a></li>
                     <li><a href="/pairs">View Instruction-Output Pairs</a></li>
@@ -28,7 +36,7 @@
                     <% } %>
                 </ul>
             </nav>
-            <main>
+            <main id="main-content">
                 <%- body %>
             </main>
         </div>
@@ -37,5 +45,8 @@
         </footer>
     </div>
     <%- defineContent('script') %>
+    <script src="/js/main.js"></script>
+    <script src="/js/menu.js"></script>
+    <%- script %>
 </body>
 </html>
