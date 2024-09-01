@@ -2,7 +2,9 @@ const express = require('express');
 const router = express.Router();
 const passport = require('passport');
 const User = require('../models/User');
-const roleAccess = require('../middleware/rbac');
+// const roleAccess = require('../middleware/rbac');
+
+const { roleAccess, isAuthenticated } = require('../middleware/rbac');
 
 // Register (admin only)
 router.post('/register', roleAccess(['admin']), async (req, res) => {

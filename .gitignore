@@ -3,3 +3,4 @@
 node_modules
 aider
 start-assistant.sh
+coverage

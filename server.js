@@ -9,7 +9,7 @@ const session = require('express-session');
 const MongoStore = require('connect-mongo');
 const expressLayouts = require('express-ejs-layouts');
 const User = require('./models/User');
-const roleAccess = require('./middleware/rbac');
+const { isAuthenticated, roleAccess } = require('./middleware/rbac');
 const { stringify } = require('csv-stringify/sync');
 
 // Create a LiveReload server
@@ -61,7 +61,9 @@ app.use((req, res, next) => {
 });
 
 // MongoDB Connection
-mongoose.connect('mongodb://localhost:27017/dataset')
+mongoose.connect('mongodb://localhost:27017/dataset', {
+    // Remove any deprecated options
+})
     .then(() => console.log('Connected to MongoDB'))
     .catch(err => console.error('Could not connect to MongoDB:', err));
 
@@ -130,14 +132,6 @@ app.delete('/pairs/:id', isAuthenticated, async (req, res) => {
 });
 
 const marked = require('marked');
-
-// Middleware to check if user is authenticated
-function isAuthenticated(req, res, next) {
-    if (req.isAuthenticated()) {
-        return next();
-    }
-    res.redirect('/login');
-}
 
 // Routes
 app.get('/', (req, res) => {
