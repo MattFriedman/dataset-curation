@@ -174,9 +174,31 @@ app.post('/pairs', isAuthenticated, async (req, res) => {
     }
 });
 
-app.get('/export', isAuthenticated, async (req, res) => {
+app.get('/export', async (req, res, next) => {
+    // Check if it's an API request
+    if (req.headers['accept'] === 'application/json') {
+        return jwtAuth(req, res, next);
+    }
+    // If it's a web request, use session authentication
+    if (!req.isAuthenticated()) {
+        return res.redirect('/login');
+    }
+    next();
+}, async (req, res) => {
     try {
         const pairs = await Pair.find().populate('approvals.user', 'username');
+        
+        // For API requests, send JSON response
+        if (req.headers['accept'] === 'application/json') {
+            const jsonData = pairs.map(pair => ({
+                instruction: pair.instruction,
+                output: pair.output,
+                approved_by: pair.approvals.map(approval => approval.user.username)
+            }));
+            return res.json(jsonData);
+        }
+
+        // For web requests, send CSV as before
         const data = pairs.map(pair => {
             const approvedBy = pair.approvals.map(approval => approval.user.username).join(', ');
             return [pair.instruction, pair.output, approvedBy];
@@ -191,7 +213,7 @@ app.get('/export', isAuthenticated, async (req, res) => {
         res.attachment('dataset.csv');
         res.send(csvContent);
     } catch (err) {
-        console.error('Error exporting CSV:', err);
+        console.error('Error exporting data:', err);
         res.status(500).send('Internal Server Error');
     }
 });
