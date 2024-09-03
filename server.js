@@ -19,7 +19,7 @@ liveReloadServer.watch(path.join(__dirname, 'public'));
 
 const app = express();
 app.use(connectLivereload());
-app.use(express.static('public'));
+app.use(express.static(path.join(__dirname, 'public')));
 
 // Middleware
 app.use(bodyParser.urlencoded({ extended: true }));
