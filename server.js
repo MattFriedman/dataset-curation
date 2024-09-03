@@ -198,7 +198,22 @@ app.get('/export', isAuthenticated, async (req, res) => {
 app.get('/pairs', isAuthenticated, async (req, res) => {
     try {
         const pairs = await Pair.find();
-        res.render('pairs', { pairs, user: req.user });
+        
+        // Calculate metrics
+        const totalPairs = pairs.length;
+        const approvedPairs = pairs.filter(pair => pair.approvalCount > 0).length;
+        const unapprovedPairs = totalPairs - approvedPairs;
+        const totalApprovals = pairs.reduce((sum, pair) => sum + pair.approvalCount, 0);
+        const averageApprovals = totalPairs > 0 ? (totalApprovals / totalPairs).toFixed(2) : '0.00';
+
+        const metrics = {
+            totalPairs,
+            approvedPairs,
+            unapprovedPairs,
+            averageApprovals
+        };
+
+        res.render('pairs', { pairs, user: req.user, metrics });
     } catch (err) {
         console.error('Error fetching pairs:', err);
         res.status(500).send('Internal Server Error');

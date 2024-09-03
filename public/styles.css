@@ -195,22 +195,34 @@ button:hover {
 
 table {
     width: 100%;
-    border-collapse: collapse;
+    border-collapse: separate;
+    border-spacing: 0;
     margin-bottom: 20px;
+    border: 1px solid #ccc;
 }
 
 th, td {
-    padding: 10px;
+    padding: 12px;
     text-align: left;
-    border-bottom: 1px solid #ddd;
+    border-bottom: 1px solid #ccc;
+    border-right: 1px solid #ccc;
 }
 
 th {
-    background-color: #f2f2f2;
+    background-color: #e6e6e6;
+    font-weight: bold;
+}
+
+tr:nth-child(even) {
+    background-color: #f8f8f8;
+}
+
+tr:nth-child(odd) {
+    background-color: #ffffff;
 }
 
 tr:hover {
-    background-color: #f1f1f1;
+    background-color: #f0f0f0;
 }
 
 .markdown-content {
@@ -249,8 +261,10 @@ tr:hover {
 
 td textarea {
     width: 100%;
-    height: 100px;
+    height: 200px; /* Increased height */
     box-sizing: border-box;
+    resize: vertical; /* Allow vertical resizing */
+    min-height: 200px; /* Set a minimum height */
 }
 .approval-btn {
     background: none;
@@ -276,4 +290,26 @@ td textarea {
     margin-left: 5px;
     font-size: 0.9em;
     color: #666;
+}
+
+.metrics-container {
+    background-color: #f0f0f0;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 20px;
+}
+
+.metrics-container h2 {
+    margin-top: 0;
+    color: #333;
+}
+
+.metrics-container ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.metrics-container li {
+    margin-bottom: 10px;
+    font-size: 16px;
 }

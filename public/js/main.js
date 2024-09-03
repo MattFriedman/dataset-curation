@@ -105,6 +105,11 @@ function editPair(id) {
         cell.setAttribute('contenteditable', 'true');
     });
 
+    // Ensure both textareas have the same height
+    const textareas = row.querySelectorAll('textarea');
+    const maxHeight = Math.max(...Array.from(textareas).map(ta => ta.scrollHeight));
+    textareas.forEach(ta => ta.style.height = `${maxHeight}px`);
+
     // Add save button
     const actionCell = row.querySelector('td:last-child');
     const saveButton = document.createElement('button');
