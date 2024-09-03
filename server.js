@@ -188,25 +188,26 @@ app.get('/export', async (req, res, next) => {
     try {
         const pairs = await Pair.find().populate('approvals.user', 'username');
         
-        // For API requests, send JSON response
-        if (req.headers['accept'] === 'application/json') {
-            const jsonData = pairs.map(pair => ({
-                instruction: pair.instruction,
-                output: pair.output,
-                approved_by: pair.approvals.map(approval => approval.user.username)
-            }));
-            return res.json(jsonData);
+        const data = pairs.map(pair => ({
+            instruction: pair.instruction,
+            output: pair.output,
+            createdAt: pair.createdAt.toISOString(),
+            updatedAt: pair.updatedAt.toISOString(),
+            approvals: JSON.stringify(pair.approvals.map(a => ({
+                user: a.user.username,
+                approvedAt: a.approvedAt.toISOString()
+            })))
+        }));
+
+        // For API requests or if JSON is explicitly requested
+        if (req.headers['accept'] === 'application/json' || req.query.format === 'json') {
+            return res.json(data);
         }
 
-        // For web requests, send CSV as before
-        const data = pairs.map(pair => {
-            const approvedBy = pair.approvals.map(approval => approval.user.username).join(', ');
-            return [pair.instruction, pair.output, approvedBy];
-        });
-        
+        // For web requests, send CSV
         const csvContent = stringify(data, {
             header: true,
-            columns: ['instruction', 'output', 'approved_by']
+            columns: ['instruction', 'output', 'createdAt', 'updatedAt', 'approvals']
         });
 
         res.header('Content-Type', 'text/csv');
@@ -230,6 +231,77 @@ app.get('/api/pairs', async (req, res) => {
     console.error('Error fetching pairs:', err);
     res.status(500).json({ message: 'Internal Server Error' });
   }
+});
+
+app.post('/import', jwtAuth, async (req, res) => {
+    try {
+        const importData = req.body;
+        
+        console.log('Received import data:', JSON.stringify(importData, null, 2));
+
+        if (!Array.isArray(importData)) {
+            return res.status(400).json({ message: 'Invalid import data format' });
+        }
+
+        const importResults = await Promise.all(importData.map(async (item) => {
+            try {
+                console.log('Processing item:', JSON.stringify(item, null, 2));
+
+                // Create new pair
+                let pair = new Pair({
+                    instruction: item.instruction,
+                    output: item.output,
+                    createdAt: new Date(item.createdAt),
+                    updatedAt: new Date(item.updatedAt)
+                });
+
+                // Handle approvals
+                if (item.approvals) {
+                    const approvalsData = typeof item.approvals === 'string' ? JSON.parse(item.approvals) : item.approvals;
+                    pair.approvals = await Promise.all(approvalsData.map(async approval => {
+                        const user = await User.findOne({ username: approval.user });
+                        if (!user) {
+                            console.warn(`User not found: ${approval.user}. Skipping this approval.`);
+                            return null;
+                        }
+                        if (!approval.approvedAt) {
+                            console.warn(`Missing approvedAt for user: ${approval.user}. Using current date.`);
+                            return {
+                                user: user._id,
+                                approvedAt: new Date()
+                            };
+                        }
+                        const approvedAt = new Date(approval.approvedAt);
+                        if (isNaN(approvedAt.getTime())) {
+                            console.warn(`Invalid date for approvedAt: ${approval.approvedAt}. Using current date.`);
+                            return {
+                                user: user._id,
+                                approvedAt: new Date()
+                            };
+                        }
+                        return {
+                            user: user._id,
+                            approvedAt: approvedAt
+                        };
+                    }));
+                    pair.approvals = pair.approvals.filter(approval => approval !== null);
+                }
+
+                console.log('Processed approvals:', pair.approvals);
+
+                await pair.save();
+                return { instruction: item.instruction, status: 'success' };
+            } catch (error) {
+                console.error('Error importing pair:', error);
+                return { instruction: item.instruction, status: 'error', message: error.message };
+            }
+        }));
+
+        res.json({ results: importResults });
+    } catch (err) {
+        console.error('Error importing data:', err);
+        res.status(500).json({ message: 'Internal Server Error' });
+    }
 });
 
 app.get('/pairs', async (req, res) => {
