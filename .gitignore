@@ -4,3 +4,5 @@ node_modules
 aider
 start-assistant.sh
 coverage
+resource-group.md
+resource-group-examples.tf

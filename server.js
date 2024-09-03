@@ -166,10 +166,10 @@ app.post('/pairs', isAuthenticated, async (req, res) => {
         const { instruction, output } = req.body;
         const newPair = new Pair({ instruction, output });
         await newPair.save();
-        res.render('index', { user: req.user });
+        res.json({ success: true, message: 'Pair added successfully' });
     } catch (err) {
         console.error('Error adding pair:', err);
-        res.status(500).send('Internal Server Error');
+        res.status(500).json({ success: false, message: 'Internal Server Error' });
     }
 });
 
