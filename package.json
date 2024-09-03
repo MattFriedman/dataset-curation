@@ -6,7 +6,8 @@
   "scripts": {
     "start": "nodemon server.js",
     "test": "jest",
-    "test:coverage": "jest --coverage"
+d    "test:coverage": "jest --coverage",
+    "test:api": "chmod +x ./test_api.sh && ./test_api.sh"
   },
   "keywords": [],
   "author": "",
@@ -20,6 +21,7 @@
     "express": "^4.19.2",
     "express-ejs-layouts": "^2.5.1",
     "express-session": "^1.18.0",
+    "jsonwebtoken": "^9.0.2",
     "marked": "^14.1.0",
     "mongoose": "^8.6.0",
     "passport": "^0.7.0",

@@ -2,8 +2,8 @@ const express = require('express');
 const router = express.Router();
 const passport = require('passport');
 const User = require('../models/User');
-
-const {roleAccess} = require('../middleware/rbac');
+const { generateToken } = require('../utils/jwt');
+const { roleAccess } = require('../middleware/rbac');
 
 // Register (admin only)
 router.post('/register', roleAccess(['admin']), async (req, res) => {
@@ -80,6 +80,24 @@ router.post('/change-password', async (req, res) => {
         console.error('Error changing password:', error);
         res.status(500).send('Error changing password');
     }
+});
+
+// Token generation endpoint
+router.post('/token', async (req, res) => {
+  try {
+    const { username, password } = req.body;
+    const user = await User.findOne({ username });
+
+    if (!user || !(await user.comparePassword(password))) {
+      return res.status(401).json({ message: 'Invalid credentials' });
+    }
+
+    const token = generateToken(user);
+    res.json({ token });
+  } catch (error) {
+    console.error('Error generating token:', error);
+    res.status(500).json({ message: 'Error generating token' });
+  }
 });
 
 module.exports = router;

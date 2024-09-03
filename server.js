@@ -11,6 +11,7 @@ const expressLayouts = require('express-ejs-layouts');
 const User = require('./models/User');
 const { isAuthenticated, roleAccess } = require('./middleware/rbac');
 const { stringify } = require('csv-stringify/sync');
+const jwtAuth = require('./middleware/jwtAuth');
 
 // Create a LiveReload server
 const liveReloadServer = livereload.createServer({ port: 35731 });
@@ -195,29 +196,49 @@ app.get('/export', isAuthenticated, async (req, res) => {
     }
 });
 
-app.get('/pairs', isAuthenticated, async (req, res) => {
-    try {
-        const pairs = await Pair.find();
-        
-        // Calculate metrics
-        const totalPairs = pairs.length;
-        const approvedPairs = pairs.filter(pair => pair.approvalCount > 0).length;
-        const unapprovedPairs = totalPairs - approvedPairs;
-        const totalApprovals = pairs.reduce((sum, pair) => sum + pair.approvalCount, 0);
-        const averageApprovals = totalPairs > 0 ? (totalApprovals / totalPairs).toFixed(2) : '0.00';
+// API routes that require token authentication
+app.use('/api', jwtAuth);
 
-        const metrics = {
-            totalPairs,
-            approvedPairs,
-            unapprovedPairs,
-            averageApprovals
-        };
+// Example protected API route
+app.get('/api/pairs', async (req, res) => {
+  try {
+    const pairs = await Pair.find();
+    res.json(pairs);
+  } catch (err) {
+    console.error('Error fetching pairs:', err);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+});
 
-        res.render('pairs', { pairs, user: req.user, metrics });
-    } catch (err) {
-        console.error('Error fetching pairs:', err);
-        res.status(500).send('Internal Server Error');
+app.get('/pairs', async (req, res) => {
+  try {
+    const pairs = await Pair.find();
+    
+    // Calculate metrics
+    const totalPairs = pairs.length;
+    const approvedPairs = pairs.filter(pair => pair.approvalCount > 0).length;
+    const unapprovedPairs = totalPairs - approvedPairs;
+    const totalApprovals = pairs.reduce((sum, pair) => sum + pair.approvalCount, 0);
+    const averageApprovals = totalPairs > 0 ? (totalApprovals / totalPairs).toFixed(2) : '0.00';
+
+    const metrics = {
+      totalPairs,
+      approvedPairs,
+      unapprovedPairs,
+      averageApprovals
+    };
+
+    // Check if it's an API request
+    if (req.headers['accept'] === 'application/json') {
+      return res.json({ pairs, metrics });
     }
+
+    // If it's a web request, render the page
+    res.render('pairs', { pairs, user: req.user, metrics });
+  } catch (err) {
+    console.error('Error fetching pairs:', err);
+    res.status(500).send('Internal Server Error');
+  }
 });
 
 // Start the Server
