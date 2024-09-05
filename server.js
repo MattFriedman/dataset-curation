@@ -222,6 +222,11 @@ app.get('/export', async (req, res, next) => {
 // API routes that require token authentication
 app.use('/api', jwtAuth);
 
+// Unsecured health check endpoint
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'OK', message: 'Server is up and running' });
+});
+
 // Example protected API route
 app.get('/api/pairs', async (req, res) => {
   try {
