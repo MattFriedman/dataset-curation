@@ -12,6 +12,7 @@ const User = require('./models/User');
 const { isAuthenticated, roleAccess } = require('./middleware/rbac');
 const { stringify } = require('csv-stringify/sync');
 const jwtAuth = require('./middleware/jwtAuth');
+const { CreationMethod } = require('./shared/enums');
 
 // Create a LiveReload server
 const liveReloadServer = livereload.createServer({ port: 35731 });
@@ -21,6 +22,7 @@ liveReloadServer.watch(path.join(__dirname, 'public'));
 const app = express();
 app.use(connectLivereload());
 app.use(express.static(path.join(__dirname, 'public')));
+app.use('/shared', express.static(path.join(__dirname, 'shared')));
 
 // Middleware
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -312,16 +314,6 @@ app.post('/import', jwtAuth, async (req, res) => {
     }
 });
 
-const CreationMethod = {
-  getLabel: function(value) {
-    switch(value) {
-      case 'manual': return 'Manual';
-      case 'augmented:paraphrased': return 'Augmented: Paraphrased';
-      case null: return 'Unknown';
-      default: return 'Invalid Creation Method';
-    }
-  }
-};
 
 app.get('/pairs', isAuthenticated, async (req, res) => {
   try {
