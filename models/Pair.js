@@ -9,6 +9,11 @@ const pairSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    creationMethod: {
+        type: String,
+        enum: ['manual', 'augmented:paraphrased', null],
+        default: null
+    },
     approvals: [{
         user: {
             type: mongoose.Schema.Types.ObjectId,

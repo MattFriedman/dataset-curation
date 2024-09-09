@@ -164,13 +164,13 @@ app.get('/add', isAuthenticated, (req, res) => {
 
 app.post('/pairs', isAuthenticated, async (req, res) => {
     try {
-        const { instruction, output } = req.body;
-        const newPair = new Pair({ instruction, output });
+        const { instruction, output, creationMethod } = req.body;
+        const newPair = new Pair({ instruction, output, creationMethod });
         await newPair.save();
         res.json({ success: true, message: 'Pair added successfully' });
     } catch (err) {
         console.error('Error adding pair:', err);
-        res.status(500).json({ success: false, message: 'Internal Server Error' });
+        res.status(500).json({ success: false, message: 'Error adding pair: ' + err.message });
     }
 });
 

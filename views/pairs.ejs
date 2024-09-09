@@ -19,6 +19,7 @@
     <tr>
         <th>Instruction</th>
         <th>Output</th>
+        <th>Creation Method</th>
         <th>Action</th>
     </tr>
     </thead>
@@ -31,6 +32,7 @@
             <td contenteditable="false" data-raw-content="<%= pair.output %>">
                 <div class="markdown-content"></div>
             </td>
+            <td><%= pair.creationMethod || 'Unknown' %></td>
             <td>
                 <button onclick="editPair('<%= pair.id %>')" style="background:none;border:none;cursor:pointer;">
                     <svg width="16" height="16" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
