@@ -108,9 +108,11 @@ function editPair(id) {
 
     // Add dropdown for creation method
     const currentMethod = creationMethodCell.textContent.trim();
-    let optionsHtml = CreationMethod.values().map(method => 
-        `<option value="${method}" ${currentMethod === CreationMethod.getLabel(method) ? 'selected' : ''}>${CreationMethod.getLabel(method)}</option>`
-    ).join('');
+    let optionsHtml = Object.entries(Enums.CreationMethod)
+        .filter(([key, value]) => typeof value === 'string')
+        .map(([key, value]) => 
+            `<option value="${value}" ${currentMethod === Enums.CreationMethod.getLabel(value) ? 'selected' : ''}>${Enums.CreationMethod.getLabel(value)}</option>`
+        ).join('');
     creationMethodCell.innerHTML = `<select>${optionsHtml}</select>`;
 
     // Ensure both textareas have the same height
@@ -124,6 +126,9 @@ function editPair(id) {
     saveButton.textContent = 'Save';
     saveButton.onclick = () => savePair(id);
     actionCell.appendChild(saveButton);
+
+    // Hide other action buttons
+    actionCell.querySelectorAll('button:not(:last-child)').forEach(btn => btn.style.display = 'none');
 }
 
 function savePair(id) {
@@ -142,7 +147,7 @@ function savePair(id) {
 
     newData.creationMethod = creationMethodCell.querySelector('select').value;
 
-    fetch(`/pairs/${id}`, {  // <-- Make sure the ID is included here
+    fetch(`/pairs/${id}`, {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json'
@@ -155,11 +160,12 @@ function savePair(id) {
                 cell.innerHTML = '<div class="markdown-content"></div>';
                 cell.setAttribute('contenteditable', 'false');
             });
-            creationMethodCell.textContent = CreationMethod.getLabel(newData.creationMethod);
+            creationMethodCell.textContent = Enums.CreationMethod.getLabel(newData.creationMethod);
             renderAllMarkdown();
             
-            // Remove save button
+            // Remove save button and show other action buttons
             const actionCell = row.querySelector('td:last-child');
+            actionCell.querySelectorAll('button').forEach(btn => btn.style.display = '');
             const saveButton = actionCell.querySelector('button:last-child');
             if (saveButton) {
                 actionCell.removeChild(saveButton);
