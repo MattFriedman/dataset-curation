@@ -60,7 +60,7 @@
                         </svg>
                     <% } %>
                 </button>
-                <span class="approval-count"><%= pair.approvalCount %> approval<%= pair.approvalCount !== 1 ? 's' : '' %></span>
+                <span class="approval-count"><%= pair.approvals.length %> approval<%= pair.approvals.length !== 1 ? 's' : '' %></span>
             </td>
         </tr>
     <% }); %>

@@ -127,8 +127,11 @@ function editPair(id) {
     saveButton.onclick = () => savePair(id);
     actionCell.appendChild(saveButton);
 
-    // Hide other action buttons
-    actionCell.querySelectorAll('button:not(:last-child)').forEach(btn => btn.style.display = 'none');
+    // Disable other action buttons instead of hiding them
+    actionCell.querySelectorAll('button:not(:last-child)').forEach(btn => {
+        btn.disabled = true;
+        btn.style.opacity = '0.5';
+    });
 }
 
 function savePair(id) {
@@ -163,9 +166,12 @@ function savePair(id) {
             creationMethodCell.textContent = Enums.CreationMethod.getLabel(newData.creationMethod);
             renderAllMarkdown();
             
-            // Remove save button and show other action buttons
+            // Remove save button and re-enable other action buttons
             const actionCell = row.querySelector('td:last-child');
-            actionCell.querySelectorAll('button').forEach(btn => btn.style.display = '');
+            actionCell.querySelectorAll('button').forEach(btn => {
+                btn.disabled = false;
+                btn.style.opacity = '1';
+            });
             const saveButton = actionCell.querySelector('button:last-child');
             if (saveButton) {
                 actionCell.removeChild(saveButton);

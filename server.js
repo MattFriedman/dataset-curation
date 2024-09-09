@@ -317,10 +317,10 @@ app.post('/import', jwtAuth, async (req, res) => {
 
 app.get('/pairs', isAuthenticated, async (req, res) => {
   try {
-    const pairs = await Pair.find().lean();
+    const pairs = await Pair.find();
     
     const formattedPairs = pairs.map(pair => ({
-      ...pair,
+      ...pair.toObject(), // Convert to plain object
       creationMethod: pair.creationMethod ? CreationMethod.getLabel(pair.creationMethod) : 'Unknown',
       isApprovedBy: function(userId) {
         return userId && this.approvals.some(approval => approval.user.toString() === userId);
