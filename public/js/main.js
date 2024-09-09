@@ -98,12 +98,20 @@ function toggleApproval(id) {
 function editPair(id) {
     const row = document.querySelector(`tr[data-id='${id}']`);
     const cells = row.querySelectorAll('td[data-raw-content]');
+    const creationMethodCell = row.querySelector('td:nth-child(3)'); // Assuming it's the third column
     
     cells.forEach(cell => {
         const rawContent = cell.getAttribute('data-raw-content');
         cell.innerHTML = `<textarea>${rawContent}</textarea>`;
         cell.setAttribute('contenteditable', 'true');
     });
+
+    // Add dropdown for creation method
+    const currentMethod = creationMethodCell.textContent.trim();
+    let optionsHtml = CreationMethod.values().map(method => 
+        `<option value="${method}" ${currentMethod === CreationMethod.getLabel(method) ? 'selected' : ''}>${CreationMethod.getLabel(method)}</option>`
+    ).join('');
+    creationMethodCell.innerHTML = `<select>${optionsHtml}</select>`;
 
     // Ensure both textareas have the same height
     const textareas = row.querySelectorAll('textarea');
@@ -121,6 +129,7 @@ function editPair(id) {
 function savePair(id) {
     const row = document.querySelector(`tr[data-id='${id}']`);
     const cells = row.querySelectorAll('td[data-raw-content]');
+    const creationMethodCell = row.querySelector('td:nth-child(3)');
     const newData = {};
 
     cells.forEach((cell, index) => {
@@ -131,7 +140,9 @@ function savePair(id) {
         cell.setAttribute('data-raw-content', newContent);
     });
 
-    fetch(`/pairs/${id}`, {
+    newData.creationMethod = creationMethodCell.querySelector('select').value;
+
+    fetch(`/pairs/${id}`, {  // <-- Make sure the ID is included here
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json'
@@ -144,6 +155,7 @@ function savePair(id) {
                 cell.innerHTML = '<div class="markdown-content"></div>';
                 cell.setAttribute('contenteditable', 'false');
             });
+            creationMethodCell.textContent = CreationMethod.getLabel(newData.creationMethod);
             renderAllMarkdown();
             
             // Remove save button

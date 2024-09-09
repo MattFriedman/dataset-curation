@@ -108,8 +108,11 @@ app.post('/pairs/:id/toggle-approval', isAuthenticated, async (req, res) => {
 app.put('/pairs/:id', isAuthenticated, async (req, res) => {
     try {
         const { id } = req.params;
-        const { instruction, output } = req.body;
-        const updatedPair = await Pair.findByIdAndUpdate(id, { instruction, output }, { new: true });
+        const { instruction, output, creationMethod } = req.body;
+        const updatedPair = await Pair.findByIdAndUpdate(id, 
+            { instruction, output, creationMethod }, 
+            { new: true }
+        );
         if (!updatedPair) {
             return res.status(404).send('Pair not found');
         }
@@ -309,15 +312,34 @@ app.post('/import', jwtAuth, async (req, res) => {
     }
 });
 
-app.get('/pairs', async (req, res) => {
+const CreationMethod = {
+  getLabel: function(value) {
+    switch(value) {
+      case 'manual': return 'Manual';
+      case 'augmented:paraphrased': return 'Augmented: Paraphrased';
+      case null: return 'Unknown';
+      default: return 'Invalid Creation Method';
+    }
+  }
+};
+
+app.get('/pairs', isAuthenticated, async (req, res) => {
   try {
-    const pairs = await Pair.find();
+    const pairs = await Pair.find().lean();
+    
+    const formattedPairs = pairs.map(pair => ({
+      ...pair,
+      creationMethod: pair.creationMethod ? CreationMethod.getLabel(pair.creationMethod) : 'Unknown',
+      isApprovedBy: function(userId) {
+        return userId && this.approvals.some(approval => approval.user.toString() === userId);
+      }
+    }));
     
     // Calculate metrics
     const totalPairs = pairs.length;
-    const approvedPairs = pairs.filter(pair => pair.approvalCount > 0).length;
+    const approvedPairs = pairs.filter(pair => pair.approvals.length > 0).length;
     const unapprovedPairs = totalPairs - approvedPairs;
-    const totalApprovals = pairs.reduce((sum, pair) => sum + pair.approvalCount, 0);
+    const totalApprovals = pairs.reduce((sum, pair) => sum + pair.approvals.length, 0);
     const averageApprovals = totalPairs > 0 ? (totalApprovals / totalPairs).toFixed(2) : '0.00';
 
     const metrics = {
@@ -329,11 +351,11 @@ app.get('/pairs', async (req, res) => {
 
     // Check if it's an API request
     if (req.headers['accept'] === 'application/json') {
-      return res.json({ pairs, metrics });
+      return res.json({ pairs: formattedPairs, metrics });
     }
 
     // If it's a web request, render the page
-    res.render('pairs', { pairs, user: req.user, metrics });
+    res.render('pairs', { pairs: formattedPairs, user: req.user, metrics });
   } catch (err) {
     console.error('Error fetching pairs:', err);
     res.status(500).send('Internal Server Error');

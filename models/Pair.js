@@ -39,7 +39,7 @@ pairSchema.virtual('approvalCount').get(function() {
 });
 
 pairSchema.methods.isApprovedBy = function(userId) {
-    return this.approvals.some(approval => approval.user.equals(userId));
+    return userId && this.approvals.some(approval => approval.user.equals(userId));
 };
 
 const Pair = mongoose.model('Pair', pairSchema);

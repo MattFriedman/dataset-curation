@@ -25,7 +25,7 @@
     </thead>
     <tbody>
     <% pairs.forEach(function(pair) { %>
-        <tr data-id="<%= pair.id %>">
+        <tr data-id="<%= pair._id %>">
             <td contenteditable="false" data-raw-content="<%= pair.instruction %>">
                 <div class="markdown-content"></div>
             </td>
@@ -34,18 +34,18 @@
             </td>
             <td><%= pair.creationMethod || 'Unknown' %></td>
             <td>
-                <button onclick="editPair('<%= pair.id %>')" style="background:none;border:none;cursor:pointer;">
+                <button onclick="editPair('<%= pair._id %>')" style="background:none;border:none;cursor:pointer;">
                     <svg width="16" height="16" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                       <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
                       <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
                     </svg>
                 </button>
-                <button onclick="deletePair('<%= pair.id %>')" style="background:none;border:none;cursor:pointer;">
+                <button onclick="deletePair('<%= pair._id %>')" style="background:none;border:none;cursor:pointer;">
                     <svg height="16" width="16" xmlns="http://www.w3.org/2000/svg">
                         <path d="m5.5 1s-.6856953.0357617-.5.5v1.5h-2.5s-.5 0-.5.5v2.5h1v8s0 1 1 1h7.96875c.031 0 1.03125 0 1.03125-1v-8h1v-2.5c0-.5-.5-.5-.5-.5h-2.5v-1.5c0-.5-.5-.5-.5-.5zm.5 1h4v1h-4zm-3 2h2 6 2v1h-9.03125-.96875zm1 2h8v.25 4.388672 3.111328c0 .1385-.1115.25-.25.25h-7.5c-.1385 0-.25-.1115-.25-.25v-3.111328-4.388672zm2 1v6h1v-6zm3 0v6h1v-6z" fill="#666"/>
                     </svg>
                 </button>
-                <button onclick="toggleApproval('<%= pair.id %>')" class="approval-btn <%= pair.isApprovedBy(user.id) ? 'approved' : '' %>">
+                <button onclick="toggleApproval('<%= pair._id %>')" class="approval-btn <%= user && user._id && pair.isApprovedBy(user._id.toString()) ? 'approved' : '' %>">
                     <% if (pair.approvalCount <= 1) { %>
                         <svg class="approval-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <g id="Interface / Check_Big">
