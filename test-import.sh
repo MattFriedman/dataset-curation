@@ -45,7 +45,7 @@ echo "Export response: $EXPORT_RESPONSE"
 
 # Test import endpoint
 echo "Testing POST /import endpoint..."
-IMPORT_DATA='[{"instruction":"Test instruction","output":"Test output","createdAt":"2023-01-01T00:00:00.000Z","updatedAt":"2023-01-01T00:00:00.000Z","approvals":"[{\"user\":\"matt\",\"approvedAt\":\"2023-01-01T00:00:00.000Z\"}]"}]'
+IMPORT_DATA='[{"creationMethod": "manual", "instruction":"Test instruction","output":"Test output","createdAt":"2023-01-01T00:00:00.000Z","updatedAt":"2023-01-01T00:00:00.000Z","approvals":"[{\"user\":\"matt\",\"approvedAt\":\"2023-01-01T00:00:00.000Z\"}]"}]'
 IMPORT_RESPONSE=$(curl -s -X POST ${BASE_URL}/import -H "Content-Type: application/json" -H "Authorization: Bearer $TOKEN" -d "$IMPORT_DATA")
 
 echo "Import response: $IMPORT_RESPONSE"

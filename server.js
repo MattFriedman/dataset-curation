@@ -261,6 +261,7 @@ app.post('/import', jwtAuth, async (req, res) => {
                 let pair = new Pair({
                     instruction: item.instruction,
                     output: item.output,
+                    creationMethod: item.creationMethod || null, // Add this line
                     createdAt: new Date(item.createdAt),
                     updatedAt: new Date(item.updatedAt)
                 });
