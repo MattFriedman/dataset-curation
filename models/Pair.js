@@ -14,6 +14,11 @@ const pairSchema = new mongoose.Schema({
         enum: ['manual', 'augmented:paraphrased', null],
         default: null
     },
+    category: {
+        type: String,
+        enum: Object.values(require('../shared/enums').Category).filter(value => typeof value === 'string'),
+        default: null
+    },
     approvals: [{
         user: {
             type: mongoose.Schema.Types.ObjectId,

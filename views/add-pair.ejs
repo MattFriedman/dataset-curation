@@ -12,11 +12,19 @@
             <textarea id="output" name="output" required></textarea>
         </div>
     </div>
+    <div class="form-row">
+        <div class="form-column">
+            <label for="category">Category:</label>
+            <select id="category" name="category" required>
+                <option value="">Select a category</option>
+                <% Object.values(Enums.Category).filter(value => typeof value === 'string').forEach(value => { %>
+                    <option value="<%= value %>"><%= Enums.Category.getLabel(value) %></option>
+                <% }); %>
+            </select>
+        </div>
+    </div>
     <input type="hidden" name="creationMethod" value="manual">
     <button type="submit">Add Pair</button>
 </form>
 <br>
 <a href="/pairs">View Instruction-Output Pairs</a>
-
-</body>
-</html>

@@ -1,6 +1,7 @@
 # Dataset Curation Web Application
 
-This project is a web application designed to facilitate the curation and management of datasets. It provides tools for organizing, viewing, and editing data efficiently.
+This project is a web application designed to facilitate the curation and management of datasets. It provides tools for
+organizing, viewing, and editing data efficiently.
 
 ## Features
 
@@ -59,6 +60,38 @@ This project is a web application designed to facilitate the curation and manage
 3. Use the interface to add, edit, and approve data pairs.
 4. Export data as needed.
 
+## Development Mode
+
+The application includes a development mode feature that limits the number of pairs displayed in the pairs view. This is
+useful for testing and development purposes.
+
+### Environment Variables
+
+- `NODE_ENV`: Set this to anything other than 'production' to enable development mode.
+- `DEV_MODE_LIMIT`: Set this to an integer to control the number of pairs displayed in development mode. If not set, it
+  defaults to 3.
+
+### Usage
+
+To enable development mode:
+
+1. Set the environment variables when starting the server:
+   ```
+   NODE_ENV=development DEV_MODE_LIMIT=5 npm start
+   ```
+   This example will display 5 pairs in development mode.
+
+2. In development mode, the pairs view will display only the specified number of pairs from the database.
+
+3. A notice will be shown at the top of the pairs view indicating that dev mode is active, showing the number of pairs
+   displayed, and the total number of pairs in the database.
+
+To run the application in production mode (displaying all pairs):
+
+   ```
+   NODE_ENV=production npm start
+   ```
+
 ## API Endpoints
 
 - GET /api/pairs: Fetch all data pairs
@@ -73,11 +106,13 @@ API requests require JWT authentication. Obtain a token by logging in through th
 ## Testing
 
 Run the test suite with:
+
 ```
 npm test
 ```
 
 For coverage report:
+
 ```
 npm run test:coverage
 ```

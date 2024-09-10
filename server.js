@@ -12,7 +12,10 @@ const User = require('./models/User');
 const { isAuthenticated, roleAccess } = require('./middleware/rbac');
 const { stringify } = require('csv-stringify/sync');
 const jwtAuth = require('./middleware/jwtAuth');
-const { CreationMethod } = require('./shared/enums');
+const Enums = require('./shared/enums');
+
+const DEV_MODE = process.env.NODE_ENV !== 'production';
+const DEV_MODE_LIMIT = parseInt(process.env.DEV_MODE_LIMIT, 10) || 3; // Number of rows to display in dev mode
 
 // Create a LiveReload server
 const liveReloadServer = livereload.createServer({ port: 35731 });
@@ -110,18 +113,22 @@ app.post('/pairs/:id/toggle-approval', isAuthenticated, async (req, res) => {
 app.put('/pairs/:id', isAuthenticated, async (req, res) => {
     try {
         const { id } = req.params;
-        const { instruction, output, creationMethod } = req.body;
+        const { instruction, output, creationMethod, category } = req.body;
+        console.log('Debug: Received category:', category);
+
         const updatedPair = await Pair.findByIdAndUpdate(id, 
-            { instruction, output, creationMethod }, 
+            { instruction, output, creationMethod, category }, 
             { new: true }
         );
+        console.log('Debug: Updated pair in DB:', updatedPair);
+
         if (!updatedPair) {
-            return res.status(404).send('Pair not found');
+            return res.status(404).json({ message: 'Pair not found' });
         }
-        res.status(200).send(updatedPair);
+        res.status(200).json(updatedPair);
     } catch (err) {
         console.error('Error updating pair:', err);
-        res.status(500).send('Internal Server Error');
+        res.status(500).json({ message: 'Internal Server Error' });
     }
 });
 
@@ -164,13 +171,13 @@ app.get('/change-password', isAuthenticated, (req, res) => {
 
 // Secure routes
 app.get('/add', isAuthenticated, (req, res) => {
-    res.render('add-pair', { user: req.user });
+    res.render('add-pair', { user: req.user, Enums });
 });
 
 app.post('/pairs', isAuthenticated, async (req, res) => {
     try {
-        const { instruction, output, creationMethod } = req.body;
-        const newPair = new Pair({ instruction, output, creationMethod });
+        const { instruction, output, creationMethod, category } = req.body;
+        const newPair = new Pair({ instruction, output, creationMethod, category });
         await newPair.save();
         res.json({ success: true, message: 'Pair added successfully' });
     } catch (err) {
@@ -318,21 +325,29 @@ app.post('/import', jwtAuth, async (req, res) => {
 
 app.get('/pairs', isAuthenticated, async (req, res) => {
   try {
-    const pairs = await Pair.find();
+    let pairs = await Pair.find();
+    
+    // Apply dev mode limit if in dev mode
+    if (DEV_MODE) {
+      pairs = pairs.slice(0, DEV_MODE_LIMIT);
+    }
     
     const formattedPairs = pairs.map(pair => ({
       ...pair.toObject(), // Convert to plain object
-      creationMethod: pair.creationMethod ? CreationMethod.getLabel(pair.creationMethod) : 'Unknown',
+      creationMethod: pair.creationMethod ? Enums.CreationMethod.getLabel(pair.creationMethod) : 'Unknown',
       isApprovedBy: function(userId) {
         return userId && this.approvals.some(approval => approval.user.toString() === userId);
       }
     }));
     
     // Calculate metrics
-    const totalPairs = pairs.length;
-    const approvedPairs = pairs.filter(pair => pair.approvals.length > 0).length;
+    const totalPairs = await Pair.countDocuments();
+    const approvedPairs = await Pair.countDocuments({ approvals: { $not: { $size: 0 } } });
     const unapprovedPairs = totalPairs - approvedPairs;
-    const totalApprovals = pairs.reduce((sum, pair) => sum + pair.approvals.length, 0);
+    const totalApprovals = await Pair.aggregate([
+      { $project: { approvalCount: { $size: "$approvals" } } },
+      { $group: { _id: null, total: { $sum: "$approvalCount" } } }
+    ]).then(result => result[0]?.total || 0);
     const averageApprovals = totalPairs > 0 ? (totalApprovals / totalPairs).toFixed(2) : '0.00';
 
     const metrics = {
@@ -348,7 +363,14 @@ app.get('/pairs', isAuthenticated, async (req, res) => {
     }
 
     // If it's a web request, render the page
-    res.render('pairs', { pairs: formattedPairs, user: req.user, metrics });
+    res.render('pairs', { 
+      pairs: formattedPairs, 
+      user: req.user, 
+      metrics, 
+      Enums,
+      DEV_MODE,
+      DEV_MODE_LIMIT
+    });
   } catch (err) {
     console.error('Error fetching pairs:', err);
     res.status(500).send('Internal Server Error');

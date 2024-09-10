@@ -3,6 +3,13 @@
 <%- contentFor('body') %>
 <h1>Instruction-Output Pairs</h1>
 
+<% if (DEV_MODE) { %>
+  <div class="dev-mode-notice">
+    <strong>Dev Mode:</strong> Displaying <%= DEV_MODE_LIMIT %> rows only. 
+    <span>Total pairs in database: <%= metrics.totalPairs %></span>
+  </div>
+<% } %>
+
 <div class="metrics-container">
     <h2>Pair Metrics</h2>
     <ul>
@@ -20,6 +27,7 @@
         <th>Instruction</th>
         <th>Output</th>
         <th>Creation Method</th>
+        <th>Category</th>
         <th>Action</th>
     </tr>
     </thead>
@@ -33,6 +41,7 @@
                 <div class="markdown-content"></div>
             </td>
             <td><%= pair.creationMethod || 'Unknown' %></td>
+            <td><%= pair.category ? Enums.Category.getLabel(pair.category) : 'Unknown' %></td>
             <td>
                 <button onclick="editPair('<%= pair._id %>')" style="background:none;border:none;cursor:pointer;">
                     <svg width="16" height="16" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

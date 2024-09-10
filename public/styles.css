@@ -313,3 +313,12 @@ td textarea {
     margin-bottom: 10px;
     font-size: 16px;
 }
+
+.dev-mode-notice {
+  background-color: #fff3cd;
+  border: 1px solid #ffeeba;
+  color: #856404;
+  padding: 10px;
+  margin-bottom: 20px;
+  border-radius: 4px;
+}

@@ -99,6 +99,7 @@ function editPair(id) {
     const row = document.querySelector(`tr[data-id='${id}']`);
     const cells = row.querySelectorAll('td[data-raw-content]');
     const creationMethodCell = row.querySelector('td:nth-child(3)'); // Assuming it's the third column
+    const categoryCell = row.querySelector('td:nth-child(4)'); // Assuming it's the fourth column
     
     cells.forEach(cell => {
         const rawContent = cell.getAttribute('data-raw-content');
@@ -108,12 +109,20 @@ function editPair(id) {
 
     // Add dropdown for creation method
     const currentMethod = creationMethodCell.textContent.trim();
-    let optionsHtml = Object.entries(Enums.CreationMethod)
+    let creationMethodOptionsHtml = Object.entries(Enums.CreationMethod)
         .filter(([key, value]) => typeof value === 'string')
         .map(([key, value]) => 
             `<option value="${value}" ${currentMethod === Enums.CreationMethod.getLabel(value) ? 'selected' : ''}>${Enums.CreationMethod.getLabel(value)}</option>`
         ).join('');
-    creationMethodCell.innerHTML = `<select>${optionsHtml}</select>`;
+    creationMethodCell.innerHTML = `<select>${creationMethodOptionsHtml}</select>`;
+
+    // Add dropdown for category
+    const currentCategory = categoryCell.textContent.trim();
+    let categoryOptionsHtml = Enums.Category.values()
+        .map(value => 
+            `<option value="${value}" ${currentCategory === Enums.Category.getLabel(value) ? 'selected' : ''}>${Enums.Category.getLabel(value)}</option>`
+        ).join('');
+    categoryCell.innerHTML = `<select>${categoryOptionsHtml}</select>`;
 
     // Ensure both textareas have the same height
     const textareas = row.querySelectorAll('textarea');
@@ -138,6 +147,7 @@ function savePair(id) {
     const row = document.querySelector(`tr[data-id='${id}']`);
     const cells = row.querySelectorAll('td[data-raw-content]');
     const creationMethodCell = row.querySelector('td:nth-child(3)');
+    const categoryCell = row.querySelector('td:nth-child(4)');
     const newData = {};
 
     cells.forEach((cell, index) => {
@@ -149,6 +159,8 @@ function savePair(id) {
     });
 
     newData.creationMethod = creationMethodCell.querySelector('select').value;
+    newData.category = categoryCell.querySelector('select').value;
+    console.log('Debug: Category being sent:', newData.category);
 
     fetch(`/pairs/${id}`, {
         method: 'PUT',
@@ -159,28 +171,44 @@ function savePair(id) {
     })
     .then(response => {
         if (response.ok) {
-            cells.forEach(cell => {
-                cell.innerHTML = '<div class="markdown-content"></div>';
-                cell.setAttribute('contenteditable', 'false');
-            });
-            creationMethodCell.textContent = Enums.CreationMethod.getLabel(newData.creationMethod);
-            renderAllMarkdown();
-            
-            // Remove save button and re-enable other action buttons
-            const actionCell = row.querySelector('td:last-child');
-            actionCell.querySelectorAll('button').forEach(btn => {
-                btn.disabled = false;
-                btn.style.opacity = '1';
-            });
-            const saveButton = actionCell.querySelector('button:last-child');
-            if (saveButton) {
-                actionCell.removeChild(saveButton);
-            }
+            return response.json();
         } else {
-            alert('Failed to update pair');
+            throw new Error('Failed to update pair');
         }
     })
-    .catch(error => console.error('Error:', error));
+    .then(updatedPair => {
+        console.log('Debug: Updated pair received:', updatedPair);
+        cells.forEach(cell => {
+            cell.innerHTML = '<div class="markdown-content"></div>';
+            cell.setAttribute('contenteditable', 'false');
+        });
+        creationMethodCell.textContent = Enums.CreationMethod.getLabel(updatedPair.creationMethod);
+        
+        // Check if category exists in the updatedPair before setting it
+        if (updatedPair.category) {
+            categoryCell.textContent = Enums.Category.getLabel(updatedPair.category);
+        } else {
+            categoryCell.textContent = 'Unknown';
+        }
+        
+        console.log('Debug: Category label set:', categoryCell.textContent);
+        renderAllMarkdown();
+        
+        // Remove save button and re-enable other action buttons
+        const actionCell = row.querySelector('td:last-child');
+        actionCell.querySelectorAll('button').forEach(btn => {
+            btn.disabled = false;
+            btn.style.opacity = '1';
+        });
+        const saveButton = actionCell.querySelector('button:last-child');
+        if (saveButton) {
+            actionCell.removeChild(saveButton);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert(error.message);
+    });
 }
 
 function deletePair(id) {
