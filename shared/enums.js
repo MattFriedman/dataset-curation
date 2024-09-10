@@ -27,5 +27,22 @@
         }
     });
 
-    return { CreationMethod };
+    const Category = Object.freeze({
+        HCL_EXAMPLE: 'hcl_example',
+        DOCS: 'docs',
+
+        values: function() {
+            return Object.values(this).filter(value => typeof value === 'string');
+        },
+
+        getLabel: function(value) {
+            switch(value) {
+                case this.HCL_EXAMPLE: return 'HCL Example';
+                case this.DOCS: return 'Documentation';
+                default: return 'Invalid Category';
+            }
+        }
+    });
+
+    return { CreationMethod, Category };
 }));
