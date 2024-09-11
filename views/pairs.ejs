@@ -20,7 +20,22 @@
     </ul>
 </div>
 
-<a href="/add" style="text-decoration: none; color: #007bff;">Add a new pair</a>
+<div class="actions-container">
+    <a href="/add" style="text-decoration: none; color: #007bff;">Add a new pair</a>
+    <div class="sort-container">
+        <label for="sort-select">Sort by:</label>
+        <select id="sort-select" onchange="sortPairs(this.value)">
+            <option value="newest" <%= sortOrder === 'newest' ? 'selected' : '' %>>Newest First</option>
+            <option value="oldest" <%= sortOrder === 'oldest' ? 'selected' : '' %>>Oldest First</option>
+        </select>
+    </div>
+</div>
+
+<script>
+function sortPairs(order) {
+    window.location.href = '/pairs?sort=' + order;
+}
+</script>
 <table border="1">
     <thead>
     <tr>

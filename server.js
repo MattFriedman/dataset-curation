@@ -335,7 +335,10 @@ app.post('/import', jwtAuth, async (req, res) => {
 
 app.get('/pairs', isAuthenticated, async (req, res) => {
   try {
-    let pairs = await Pair.find();
+    const sortOrder = req.query.sort || 'newest';
+    const sortOptions = sortOrder === 'oldest' ? { createdAt: 1 } : { createdAt: -1 };
+
+    let pairs = await Pair.find().sort(sortOptions);
     
     // Apply dev mode limit if in dev mode
     if (DEV_MODE) {
@@ -379,7 +382,8 @@ app.get('/pairs', isAuthenticated, async (req, res) => {
       metrics, 
       Enums,
       DEV_MODE,
-      DEV_MODE_LIMIT
+      DEV_MODE_LIMIT,
+      sortOrder: sortOrder // Explicitly pass sortOrder to the template
     });
   } catch (err) {
     console.error('Error fetching pairs:', err);
