@@ -113,22 +113,23 @@ app.post('/pairs/:id/toggle-approval', isAuthenticated, async (req, res) => {
 app.put('/pairs/:id', isAuthenticated, async (req, res) => {
     try {
         const { id } = req.params;
-        const { instruction, output, creationMethod, category } = req.body;
-        console.log('Debug: Received category:', category);
+        const { instruction, output, creationMethod, category, metadata } = req.body;
+        console.log('Debug: Received data:', JSON.stringify({ instruction, output, creationMethod, category, metadata }, null, 2));
 
         const updatedPair = await Pair.findByIdAndUpdate(id, 
-            { instruction, output, creationMethod, category }, 
-            { new: true }
+            { instruction, output, creationMethod, category, metadata }, 
+            { new: true, runValidators: true }
         );
-        console.log('Debug: Updated pair in DB:', updatedPair);
+        console.log('Debug: Updated pair in DB:', JSON.stringify(updatedPair.toObject(), null, 2));
 
         if (!updatedPair) {
+            console.log('Debug: Pair not found for id:', id);
             return res.status(404).json({ message: 'Pair not found' });
         }
         res.status(200).json(updatedPair);
     } catch (err) {
         console.error('Error updating pair:', err);
-        res.status(500).json({ message: 'Internal Server Error' });
+        res.status(500).json({ message: 'Internal Server Error', error: err.message });
     }
 });
 
@@ -176,8 +177,17 @@ app.get('/add', isAuthenticated, (req, res) => {
 
 app.post('/pairs', isAuthenticated, async (req, res) => {
     try {
-        const { instruction, output, creationMethod, category } = req.body;
-        const newPair = new Pair({ instruction, output, creationMethod, category });
+        const { instruction, output, creationMethod, category, metadata } = req.body;
+        let metadataObject = {};
+        if (metadata) {
+            try {
+                metadataObject = JSON.parse(metadata);
+            } catch (error) {
+                console.error('Error parsing metadata:', error);
+                return res.status(400).json({ success: false, message: 'Invalid metadata format' });
+            }
+        }
+        const newPair = new Pair({ instruction, output, creationMethod, category, metadata: metadataObject });
         await newPair.save();
         res.json({ success: true, message: 'Pair added successfully' });
     } catch (err) {

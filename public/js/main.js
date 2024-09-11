@@ -9,6 +9,18 @@ function setupAddPairForm() {
         form.addEventListener('submit', function(e) {
             e.preventDefault();
             const formData = new FormData(form);
+            
+            // Parse metadata
+            const metadataText = formData.get('metadata');
+            const metadata = {};
+            metadataText.split('\n').forEach(line => {
+                const [key, value] = line.split(':').map(item => item.trim());
+                if (key && value) {
+                    metadata[key] = value;
+                }
+            });
+            formData.set('metadata', JSON.stringify(metadata));
+
             fetch('/pairs', {
                 method: 'POST',
                 body: new URLSearchParams(formData),
@@ -100,12 +112,17 @@ function editPair(id) {
     const cells = row.querySelectorAll('td[data-raw-content]');
     const creationMethodCell = row.querySelector('td:nth-child(3)'); // Assuming it's the third column
     const categoryCell = row.querySelector('td:nth-child(4)'); // Assuming it's the fourth column
+    const metadataCell = row.querySelector('td:nth-child(5)'); // Assuming it's the fifth column
     
     cells.forEach(cell => {
         const rawContent = cell.getAttribute('data-raw-content');
         cell.innerHTML = `<textarea>${rawContent}</textarea>`;
         cell.setAttribute('contenteditable', 'true');
     });
+
+    // Add textarea for metadata
+    const metadataContent = metadataCell.textContent.trim();
+    metadataCell.innerHTML = `<textarea class="metadata-edit">${metadataContent}</textarea>`;
 
     // Add dropdown for creation method
     const currentMethod = creationMethodCell.textContent.trim();
@@ -148,6 +165,7 @@ function savePair(id) {
     const cells = row.querySelectorAll('td[data-raw-content]');
     const creationMethodCell = row.querySelector('td:nth-child(3)');
     const categoryCell = row.querySelector('td:nth-child(4)');
+    const metadataCell = row.querySelector('td:nth-child(5)');
     const newData = {};
 
     cells.forEach((cell, index) => {
@@ -160,7 +178,19 @@ function savePair(id) {
 
     newData.creationMethod = creationMethodCell.querySelector('select').value;
     newData.category = categoryCell.querySelector('select').value;
-    console.log('Debug: Category being sent:', newData.category);
+    
+    // Parse metadata
+    const metadataTextarea = metadataCell.querySelector('.metadata-edit');
+    const metadataContent = metadataTextarea.value;
+    newData.metadata = {};
+    metadataContent.split('\n').forEach(line => {
+        const [key, value] = line.split(':').map(item => item.trim());
+        if (key && value) {
+            newData.metadata[key] = value;
+        }
+    });
+
+    console.log('Debug: Sending data to server:', newData);
 
     fetch(`/pairs/${id}`, {
         method: 'PUT',
@@ -190,6 +220,11 @@ function savePair(id) {
         } else {
             categoryCell.textContent = 'Unknown';
         }
+        
+        // Update metadata cell
+        metadataCell.innerHTML = Object.entries(updatedPair.metadata || {})
+            .map(([key, value]) => `<div><strong>${key}:</strong> ${value}</div>`)
+            .join('') || 'No metadata';
         
         console.log('Debug: Category label set:', categoryCell.textContent);
         renderAllMarkdown();

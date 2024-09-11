@@ -28,6 +28,7 @@
         <th>Output</th>
         <th>Creation Method</th>
         <th>Category</th>
+        <th>Metadata</th>
         <th>Action</th>
     </tr>
     </thead>
@@ -42,6 +43,15 @@
             </td>
             <td><%= pair.creationMethod || 'Unknown' %></td>
             <td><%= pair.category ? Enums.Category.getLabel(pair.category) : 'Unknown' %></td>
+            <td>
+                <% if (pair.metadata && Object.keys(pair.metadata).length > 0) { %>
+                    <% for (const [key, value] of Object.entries(pair.metadata)) { %>
+                        <div><strong><%= key %>:</strong> <%= value %></div>
+                    <% } %>
+                <% } else { %>
+                    No metadata
+                <% } %>
+            </td>
             <td>
                 <button onclick="editPair('<%= pair._id %>')" style="background:none;border:none;cursor:pointer;">
                     <svg width="16" height="16" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

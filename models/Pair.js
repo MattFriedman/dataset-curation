@@ -19,6 +19,10 @@ const pairSchema = new mongoose.Schema({
         enum: Object.values(require('../shared/enums').Category).filter(value => typeof value === 'string'),
         default: null
     },
+    metadata: {
+        type: Object,
+        default: {}
+    },
     approvals: [{
         user: {
             type: mongoose.Schema.Types.ObjectId,
