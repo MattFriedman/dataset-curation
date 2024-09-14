@@ -391,6 +391,11 @@ app.get('/pairs', isAuthenticated, async (req, res) => {
   }
 });
 
+// React test route
+app.get('/react-test', (req, res) => {
+    res.render('react-test', { layout: false });
+});
+
 // Start the Server
 const port = process.env.PORT || 3000;
 app.listen(port, () => {
